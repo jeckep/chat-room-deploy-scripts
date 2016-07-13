@@ -1,10 +1,12 @@
 #!/bin/bash
 
 
-SERVER_IP="${SERVER_IP:-192.168.1.199}"
+SERVER_IP="${SERVER_IP:-192.168.0.199}"
 SSH_USER="${SSH_USER:-$(whoami)}"
 KEY_USER="${KEY_USER:-$(whoami)}"
 DOCKER_VERSION="${DOCKER_VERSION:-1.8.3}"
+
+DOCKER_PULL_IMAGES=("postgres:9.4" "redis:2.8")
 
 
 function preseed_staging() {
@@ -15,11 +17,11 @@ STAGING SERVER (DIRECT VIRTUAL MACHINE) DIRECTIONS:
      <enter password>
      nano /etc/network/interfaces
      [change the last line to look like this, remember to set the correct
-      gateway for your router's IP address if it's not 192.168.1.1]
+      gateway for your router's IP address if it's not 192.168.0.1]
 iface eth0 inet static
   address ${SERVER_IP}
   netmask 255.255.255.0
-  gateway 192.168.1.1
+  gateway 192.168.0.1
 
   2. Reboot the VM and ensure the Debian CD is mounted
 
@@ -85,6 +87,15 @@ sudo usermod -aG docker "${KEY_USER}"
   echo "done!"
 }
 
+function docker_pull () {
+  echo "Pulling Docker images..."
+  for image in "${DOCKER_PULL_IMAGES[@]}"
+  do
+    ssh -t "${SSH_USER}@${SERVER_IP}" bash -c "'docker pull ${image}'"
+  done
+  echo "done!"
+}
+
 function provision_server () {
   configure_sudo
   echo "---"
@@ -93,11 +104,13 @@ function provision_server () {
   configure_secure_ssh
   echo "---"
   install_docker ${1}
+  echo "---"
+  docker_pull
 }
 
 function help_menu () {
 cat << EOF
-Usage: ${0} (-h | -S | -u | -k | -s | -d [docker_ver] | -a [docker_ver])
+Usage: ${0} (-h | -S | -u | -k | -s | -d [docker_ver] | -l | -a [docker_ver])
 
 ENVIRONMENT VARIABLES:
    SERVER_IP        IP address to work on, ie. staging or production
@@ -119,6 +132,7 @@ OPTIONS:
    -k|--ssh-key              Add SSH key
    -s|--ssh                  Configure secure SSH
    -d|--docker               Install Docker
+   -l|--docker-pull          Pull necessary Docker images
    -a|--all                  Provision everything except preseeding
 
 EXAMPLES:
@@ -136,6 +150,9 @@ EXAMPLES:
 
    Install custom Docker version:
         $ deploy -d 1.8.1
+
+   Pull necessary Docker images:
+        $ deploy -l
 
    Configure everything together:
         $ deploy -a
@@ -167,6 +184,10 @@ case "${1}" in
   ;;
   -d|--docker)
   install_docker "${2:-${DOCKER_VERSION}}"
+  shift
+  ;;
+  -l|--docker-pull)
+  docker_pull
   shift
   ;;
   -a|--all)

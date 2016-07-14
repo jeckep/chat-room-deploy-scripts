@@ -5,9 +5,9 @@ APP_ENV="${APP_ENV:-staging}"
 SERVER_IP="${SERVER_IP:-192.168.0.99}"
 SSH_USER="${SSH_USER:-$(whoami)}"
 KEY_USER="${KEY_USER:-$(whoami)}"
-DOCKER_VERSION="${DOCKER_VERSION:-1.8.3}"
+DOCKER_VERSION="${DOCKER_VERSION:-1.10.0}"
 
-DOCKER_PULL_IMAGES=("postgres:9.4.5" "redis:2.8.22")
+DOCKER_PULL_IMAGES=("postgres:9.4" "redis:2.8")
 COPY_UNIT_FILES=("iptables-restore" "swap" "postgres" "redis" "mobydock" "nginx")
 SSL_CERT_BASE_NAME="productionexample"
 

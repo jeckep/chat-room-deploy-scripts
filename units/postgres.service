@@ -9,7 +9,7 @@ ExecStartPre=-/usr/bin/docker kill %p
 ExecStartPre=-/usr/bin/docker rm -f %p
 ExecStart=/usr/bin/docker run --rm --name %p \
   -v /var/lib/postgresql/data:/var/lib/postgresql/data \
-  -p 5432:5432 %p:9.4.5
+  -p 5432:5432 %p:9.4
 ExecStop=/usr/bin/docker stop %p
 
 [Install]

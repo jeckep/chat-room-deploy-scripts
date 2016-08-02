@@ -2,15 +2,19 @@
 
 
 APP_ENV="${APP_ENV:-staging}"
-SERVER_IP="${SERVER_IP:-192.168.0.99}"
+SERVER_IP="${SERVER_IP:-192.168.1.99}"
 SSH_USER="${SSH_USER:-$(whoami)}"
 KEY_USER="${KEY_USER:-$(whoami)}"
 DOCKER_VERSION="${DOCKER_VERSION:-1.10.0}"
+#DOCKER_REGISTRY_PROXY="${DOCKER_REGISTRY_PROXY:-1.10.0}"
 
-DOCKER_PULL_IMAGES=("postgres:9.4" "redis:2.8")
+DOCKER_PULL_IMAGES=("postgres:9.4" "redis:2.8" "nginx")
 COPY_UNIT_FILES=("iptables-restore" "swap" "postgres" "redis" "mobydock" "nginx")
 SSL_CERT_BASE_NAME="productionexample"
 
+DB_NAME="${DB_NAME:-mobydock}"
+DB_USER="${DB_USER:-mobydock}"
+DB_PASSWORD="${DB_PASSWORD:-yourpassword}"
 
 function preseed_staging() {
 cat << EOF
@@ -190,6 +194,25 @@ sudo chown root:root -R /etc/ssl
   echo "done!"
 }
 
+function create_db () {
+  echo "Create db and db user and grant privileges..."
+  read -d '' COMMAND_1 << EOF
+docker exec -it postgres createdb -U postgres "${DB_NAME}"
+EOF
+  read -d '' COMMAND_2 << EOF
+docker exec -it postgres psql -U postgres -c "CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASSWORD}'; GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};"
+EOF
+  echo ${COMMAND_1}
+  echo ${COMMAND_2}
+  ssh -t "${SSH_USER}@${SERVER_IP}" bash -c "
+  ${COMMAND_1}
+  ${COMMAND_2}
+  "
+#  ssh -t "${SSH_USER}@${SERVER_IP}" bash -c "'sudo systemctl restart docker'"
+  echo "done!"
+}
+
+
 function run_application () {
   echo "Running the application..."
   ssh -t "${SSH_USER}@${SERVER_IP}" bash -c "'
@@ -259,6 +282,7 @@ OPTIONS:
    -e|--copy--environment    Copy app environment/config files
    -x|--ssl-certs            Copy SSL certificates
    -r|--run-app              Run the application
+   -D|--create-db            Create DB, user and grant privileges
    -a|--all                  Provision everything except preseeding
 
 EXAMPLES:
@@ -306,6 +330,8 @@ EXAMPLES:
 
    Configure everything together with a custom Docker version:
         $ deploy -a 1.8.1
+   Create DB, user and grant privileges
+        $ deploy -D
 EOF
 }
 
@@ -365,6 +391,10 @@ case "${1}" in
   run_application
   shift
   ;;
+  -D|--create-db)
+  create_db
+  shift
+  ;;
   -a|--all)
   provision_server "${2:-${DOCKER_VERSION}}"
   shift
@@ -379,3 +409,9 @@ case "${1}" in
 esac
 shift
 done
+
+
+#TODO add function to initialize database
+# docker exec -it postgres createdb -U postgres "mobydock"
+# docker exec -it postgres psql -U postgres -c "CREATE USER mobydock WITH PASSWORD 'yourpassword'; GRANT ALL PRIVILEGES ON DATABASE mobydock TO mobydock;"
+#

@@ -23,11 +23,11 @@ STAGING SERVER (DIRECT VIRTUAL MACHINE) DIRECTIONS:
      <enter password>
      nano /etc/network/interfaces
      [change the last line to look like this, remember to set the correct
-      gateway for your router's IP address if it's not 192.168.1.1]
+      gateway for your router's IP address if it's not 192.168.0.1]
 iface eth0 inet static
   address ${SERVER_IP}
   netmask 255.255.255.0
-  gateway 192.168.1.1
+  gateway 192.168.0.1
 
   2. Reboot the VM and ensure the Debian CD is mounted
 

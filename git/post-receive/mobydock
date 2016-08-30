@@ -2,9 +2,27 @@
 
 REPO_NAME="mobydock"
 
+#number of pushed branches
+n=0
+#loop through args related to pushed branches
+while read oldrev newrev refname
+do
+    n=$(($n+1))
+    branch=$(git rev-parse --symbolic --abbrev-ref $refname)
+    count=0
+    if [ "master" == "$branch" ]; then
+        break
+    fi
+done
+
+#build new image only if master was pushed or only one branch was pushed
+if [ "master" != "$branch" -a count -gt 1 ]; then
+    exit 0
+fi
+
 # Check out the newest version of the code.
 export GIT_WORK_TREE="/var/git/${REPO_NAME}"
-git checkout -f
+git checkout -f $branch
 
 TAG="$(git log --pretty=format:'%h' -n 1)"
 FULL_COMMIT_TAG="${REPO_NAME}:${TAG}"

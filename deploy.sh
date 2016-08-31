@@ -177,7 +177,8 @@ function copy_env_config_files () {
 sudo mkdir -p /home/${KEY_USER}/config
 sudo mv /tmp/.env.list /home/${KEY_USER}/config/.env.list
 sudo chown ${KEY_USER}:${KEY_USER} -R /home/${KEY_USER}/config
-sudo chmod -R 660 /home/${KEY_USER}/config
+sudo chmod  770 /home/${KEY_USER}/config
+sudo chmod  660 /home/${KEY_USER}/config/.env.list
   '"
   echo "done!"
 }

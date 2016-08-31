@@ -10,8 +10,9 @@ ExecStartPre=-/usr/bin/docker kill %p
 ExecStartPre=-/usr/bin/docker rm -f %p
 ExecStart=/usr/bin/docker run -t --rm --name %p \
   --link redis:redis --link postgres:postgres \
-  -p 4567:4567 %p \
-  --env-file /home/jeck/.env.list
+  -p 4567:4567 \
+  --env-file /home/jeck/config/.env.list \
+  %p
 ExecStartPost=-/usr/bin/docker stop nginx
 ExecStop=/usr/bin/docker stop %p
 

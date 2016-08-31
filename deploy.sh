@@ -172,28 +172,22 @@ sudo systemctl start redis.service
 
 function copy_env_config_files () {
   echo "Copying environment/config files..."
-  scp "${APP_ENV}/__init__.py" "${SSH_USER}@${SERVER_IP}:/tmp/__init__.py"
-  scp "${APP_ENV}/settings.py" "${SSH_USER}@${SERVER_IP}:/tmp/settings.py"
+  scp "env/${APP_ENV}/.env.list" "${SSH_USER}@${SERVER_IP}:/tmp/.env.list"
   ssh -t "${SSH_USER}@${SERVER_IP}" bash -c "'
 sudo mkdir -p /home/${KEY_USER}/config
-sudo mv /tmp/__init__.py /home/${KEY_USER}/config/__init__.py
-sudo mv /tmp/settings.py /home/${KEY_USER}/config/settings.py
+sudo mv /tmp/.env.list /home/${KEY_USER}/config/.env.list
 sudo chown ${KEY_USER}:${KEY_USER} -R /home/${KEY_USER}/config
+sudo chmod -R 660 /home/${KEY_USER}/config
   '"
   echo "done!"
 }
 
 function copy_ssl_certs () {
   echo "Copying SSL certificates..."
-if [[ "${APP_ENV}" == "staging" ]]; then
-  scp "nginx/certs/${SSL_CERT_BASE_NAME}.crt" "${SSH_USER}@${SERVER_IP}:/tmp/${SSL_CERT_BASE_NAME}.crt"
-  scp "nginx/certs/${SSL_CERT_BASE_NAME}.key" "${SSH_USER}@${SERVER_IP}:/tmp/${SSL_CERT_BASE_NAME}.key"
-  scp "nginx/certs/dhparam.pem" "${SSH_USER}@${SERVER_IP}:/tmp/dhparam.pem"
-else
-  scp "production/certs/${SSL_CERT_BASE_NAME}.crt" "${SSH_USER}@${SERVER_IP}:/tmp/${SSL_CERT_BASE_NAME}.crt"
-  scp "production/certs/${SSL_CERT_BASE_NAME}.key" "${SSH_USER}@${SERVER_IP}:/tmp/${SSL_CERT_BASE_NAME}.key"
-  scp "production/certs/dhparam.pem" "${SSH_USER}@${SERVER_IP}:/tmp/dhparam.pem"
-fi
+  scp "env/${APP_ENV}/certs/${SSL_CERT_BASE_NAME}.crt" "${SSH_USER}@${SERVER_IP}:/tmp/${SSL_CERT_BASE_NAME}.crt"
+  scp "env/${APP_ENV}/certs/${SSL_CERT_BASE_NAME}.key" "${SSH_USER}@${SERVER_IP}:/tmp/${SSL_CERT_BASE_NAME}.key"
+  scp "env/${APP_ENV}/certs/dhparam.pem" "${SSH_USER}@${SERVER_IP}:/tmp/dhparam.pem"
+
   ssh -t "${SSH_USER}@${SERVER_IP}" bash -c "'
 sudo mv /tmp/${SSL_CERT_BASE_NAME}.crt /etc/ssl/certs/${SSL_CERT_BASE_NAME}.crt
 sudo mv /tmp/${SSL_CERT_BASE_NAME}.key /etc/ssl/private/${SSL_CERT_BASE_NAME}.key
@@ -423,3 +417,6 @@ case "${1}" in
 esac
 shift
 done
+
+
+#TODO sed username(jeck) to KEY_USER in units during copying

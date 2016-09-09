@@ -6,6 +6,7 @@ After=docker.service postgres.service redis.service
 [Service]
 Restart=always
 User=jeck
+ExecStartPre=-/bin/sh -c '/usr/bin/docker logs --tail=all %p > /tmp/%p_`date +%%s`.log'
 ExecStartPre=-/usr/bin/docker kill %p
 ExecStartPre=-/usr/bin/docker rm -f %p
 ExecStart=/usr/bin/docker run -t --rm --name %p \

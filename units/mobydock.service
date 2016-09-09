@@ -13,7 +13,7 @@ ExecStart=/usr/bin/docker run -t --rm --name %p \
   -p 4567:4567 \
   --env-file /home/jeck/config/.env.list \
   %p
-ExecStartPost=-/usr/bin/docker stop nginx
+ExecStartPost=-/usr/bin/docker stop my-nginx
 ExecStop=/usr/bin/docker stop %p
 
 [Install]

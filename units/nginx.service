@@ -1,18 +1,18 @@
 [Unit]
-Description=Run %p
+Description=Run my-%p
 Requires=docker.service mobydock.service
 After=docker.service mobydock.service
 
 [Service]
 Restart=always
-ExecStartPre=-/usr/bin/docker kill %p
-ExecStartPre=-/usr/bin/docker rm -f %p
-ExecStart=/usr/bin/docker run -t --rm --name %p \
+ExecStartPre=-/usr/bin/docker kill my-%p
+ExecStartPre=-/usr/bin/docker rm -f my-%p
+ExecStart=/usr/bin/docker run -t --rm --name my-%p \
   -p 80:80 -p 443:443 \
   --link mobydock:mobydock --volumes-from mobydock \
   -v /etc/ssl/certs:/etc/ssl/certs \
-  -v /etc/ssl/private:/etc/ssl/private %p
-ExecStop=/usr/bin/docker stop %p
+  -v /etc/ssl/private:/etc/ssl/private my-%p
+ExecStop=/usr/bin/docker stop my-%p
 
 [Install]
 WantedBy=multi-user.target

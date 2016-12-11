@@ -11,6 +11,7 @@ ExecStart=/usr/bin/docker run -t --rm --name my-%p \
   -p 80:80 -p 443:443 \
   --link mobydock:mobydock --volumes-from mobydock \
   -v /etc/ssl/certs:/etc/ssl/certs \
+  -v /var/git/nginx/configs:/configs \
   -v /etc/ssl/private:/etc/ssl/private my-%p
 ExecStop=/usr/bin/docker stop my-%p
 
